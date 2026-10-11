@@ -1,4 +1,7 @@
-import { useState, useEffect, useRef, type ReactNode } from 'react';
+import { useState, useEffect, useRef, type ReactNode, type FormEvent } from 'react';
+
+const BUSINESS_PHONE = '+16478743551';
+const BUSINESS_PHONE_DISPLAY = '(647) 874-3551';
 
 // ============ SCROLL REVEAL ============
 function useScrollReveal() {
@@ -76,12 +79,12 @@ function Navigation() {
           <a href="#journey" className="text-[#B8BDC2] hover:text-[#FF5A00] transition-colors text-sm font-medium">How It Works</a>
           <a href="#calculator" className="text-[#B8BDC2] hover:text-[#FF5A00] transition-colors text-sm font-medium">Get Quote</a>
           <a href="#challenges" className="text-[#B8BDC2] hover:text-[#FF5A00] transition-colors text-sm font-medium">Condo Moving</a>
-          <a href="#contact" className="btn-primary bg-[#FF5A00] text-white px-5 py-2.5 rounded-sm text-sm font-semibold hover:bg-[#e64d00] transition-colors">
+          <a href={`tel:${BUSINESS_PHONE}`} className="btn-primary bg-[#FF5A00] text-white px-5 py-2.5 rounded-sm text-sm font-semibold hover:bg-[#e64d00] transition-colors">
             CALL NOW
           </a>
         </div>
 
-        <button onClick={() => setMenuOpen(!menuOpen)} className="md:hidden text-[#F4F1EA]">
+        <button type="button" aria-label={menuOpen ? 'Close menu' : 'Open menu'} aria-expanded={menuOpen} aria-controls="mobile-navigation" onClick={() => setMenuOpen(!menuOpen)} className="md:hidden text-[#F4F1EA]">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             {menuOpen ? <path d="M6 6l12 12M6 18L18 6" /> : <path d="M3 12h18M3 6h18M3 18h18" />}
           </svg>
@@ -89,13 +92,13 @@ function Navigation() {
       </div>
 
       {menuOpen && (
-        <div className="md:hidden glass mt-2 mx-4 rounded-lg p-6 animate-scale-in">
+        <div id="mobile-navigation" onClick={() => setMenuOpen(false)} className="md:hidden glass mt-2 mx-4 rounded-lg p-6 animate-scale-in">
           <div className="flex flex-col gap-4">
             <a href="#services" className="text-[#B8BDC2] hover:text-[#FF5A00] transition-colors text-sm font-medium">Services</a>
             <a href="#journey" className="text-[#B8BDC2] hover:text-[#FF5A00] transition-colors text-sm font-medium">How It Works</a>
             <a href="#calculator" className="text-[#B8BDC2] hover:text-[#FF5A00] transition-colors text-sm font-medium">Get Quote</a>
             <a href="#challenges" className="text-[#B8BDC2] hover:text-[#FF5A00] transition-colors text-sm font-medium">Condo Moving</a>
-            <a href="#contact" className="bg-[#FF5A00] text-white px-5 py-2.5 rounded-sm text-sm font-semibold text-center">CALL NOW</a>
+            <a href={`tel:${BUSINESS_PHONE}`} className="bg-[#FF5A00] text-white px-5 py-2.5 rounded-sm text-sm font-semibold text-center">CALL NOW</a>
           </div>
         </div>
       )}
@@ -190,7 +193,7 @@ function Hero() {
           <a href="#calculator" className="btn-primary animate-pulse-glow bg-[#FF5A00] text-white px-8 py-4 rounded-sm font-semibold text-lg hover:bg-[#e64d00] transition-all">
             GET A MOVING QUOTE
           </a>
-          <a href="tel:+14161234567" className="border border-[#B8BDC2]/30 text-[#F4F1EA] px-8 py-4 rounded-sm font-semibold text-lg hover:border-[#FF5A00] hover:text-[#FF5A00] transition-all">
+          <a href={`tel:${BUSINESS_PHONE}`} className="border border-[#B8BDC2]/30 text-[#F4F1EA] px-8 py-4 rounded-sm font-semibold text-lg hover:border-[#FF5A00] hover:text-[#FF5A00] transition-all">
             CALL NOW
           </a>
         </div>
@@ -377,6 +380,8 @@ function MoveJourney() {
 function MovingCalculator() {
   const [moveType, setMoveType] = useState('');
   const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
     from: '',
     to: '',
     floor: '',
@@ -385,13 +390,28 @@ function MovingCalculator() {
     items: '',
     date: '',
   });
-  const [showQuote, setShowQuote] = useState(false);
+  const [quoteMessage, setQuoteMessage] = useState('');
+
+  useEffect(() => { setQuoteMessage(''); }, [formData, moveType]);
+
+  const smsSeparator = /iPad|iPhone|iPod/.test(navigator.userAgent) ? '&' : '?';
 
   const moveTypes = ['CONDO', 'APARTMENT', 'HOUSE', 'OFFICE', 'SINGLE ITEM', 'SMALL MOVE', 'FULL MOVE'];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    setShowQuote(true);
+    setQuoteMessage([
+      'Liberty Moving quote request',
+      `Name: ${formData.name}`,
+      `Callback number: ${formData.phone}`,
+      `Move type: ${moveType}`,
+      `From: ${formData.from}`,
+      `To: ${formData.to}`,
+      `Floor: ${formData.floor || 'Not specified'}`,
+      `Elevator: ${formData.elevator || 'Not specified'}`,
+      `Rooms: ${formData.rooms || 'Not specified'}`,
+      `Moving date: ${formData.date}`,
+    ].join('\n'));
   };
 
   return (
@@ -399,7 +419,7 @@ function MovingCalculator() {
       <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-[#0a0a0a] to-[#050505]" />
       <div className="relative max-w-4xl mx-auto px-6">
         <div className="text-center mb-16">
-          <div className="text-xs font-mono text-[#FF5A00] tracking-[0.3em] mb-4">MOVING CALCULATOR</div>
+          <div className="text-xs font-mono text-[#FF5A00] tracking-[0.3em] mb-4">REQUEST A MOVING QUOTE</div>
           <h2 className="font-[Space_Grotesk] text-4xl md:text-5xl font-bold gradient-text mb-4">
             WHAT KIND OF MOVE?
           </h2>
@@ -429,8 +449,16 @@ function MovingCalculator() {
           <form onSubmit={handleSubmit} className="glass rounded-xl p-8 animate-scale-in">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="text-xs text-[#B8BDC2] font-mono tracking-wider mb-2 block">CURRENT LOCATION</label>
-                <input
+                <label htmlFor="quote-name" className="text-xs text-[#B8BDC2] mb-2 block">YOUR NAME</label>
+                <input id="quote-name" autoComplete="name" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-[#0a0a0a] border border-[#181818] rounded-lg px-4 py-3" />
+              </div>
+              <div>
+                <label htmlFor="quote-phone" className="text-xs text-[#B8BDC2] mb-2 block">CALLBACK NUMBER</label>
+                <input id="quote-phone" type="tel" autoComplete="tel" required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full bg-[#0a0a0a] border border-[#181818] rounded-lg px-4 py-3" />
+              </div>
+              <div>
+                <label htmlFor="quote-from" className="text-xs text-[#B8BDC2] font-mono tracking-wider mb-2 block">CURRENT LOCATION</label>
+                <input id="quote-from" required
                   type="text"
                   value={formData.from}
                   onChange={e => setFormData({...formData, from: e.target.value})}
@@ -439,8 +467,8 @@ function MovingCalculator() {
                 />
               </div>
               <div>
-                <label className="text-xs text-[#B8BDC2] font-mono tracking-wider mb-2 block">NEW LOCATION</label>
-                <input
+                <label htmlFor="quote-to" className="text-xs text-[#B8BDC2] font-mono tracking-wider mb-2 block">NEW LOCATION</label>
+                <input id="quote-to" required
                   type="text"
                   value={formData.to}
                   onChange={e => setFormData({...formData, to: e.target.value})}
@@ -449,8 +477,8 @@ function MovingCalculator() {
                 />
               </div>
               <div>
-                <label className="text-xs text-[#B8BDC2] font-mono tracking-wider mb-2 block">FLOOR</label>
-                <select
+                <label htmlFor="quote-floor" className="text-xs text-[#B8BDC2] font-mono tracking-wider mb-2 block">FLOOR</label>
+                <select id="quote-floor"
                   value={formData.floor}
                   onChange={e => setFormData({...formData, floor: e.target.value})}
                   className="w-full bg-[#0a0a0a] border border-[#181818] rounded-lg px-4 py-3 text-[#F4F1EA] focus:border-[#FF5A00] focus:outline-none transition-colors"
@@ -462,8 +490,8 @@ function MovingCalculator() {
                 </select>
               </div>
               <div>
-                <label className="text-xs text-[#B8BDC2] font-mono tracking-wider mb-2 block">ELEVATOR</label>
-                <select
+                <label htmlFor="quote-elevator" className="text-xs text-[#B8BDC2] font-mono tracking-wider mb-2 block">ELEVATOR</label>
+                <select id="quote-elevator"
                   value={formData.elevator}
                   onChange={e => setFormData({...formData, elevator: e.target.value})}
                   className="w-full bg-[#0a0a0a] border border-[#181818] rounded-lg px-4 py-3 text-[#F4F1EA] focus:border-[#FF5A00] focus:outline-none transition-colors"
@@ -475,8 +503,8 @@ function MovingCalculator() {
                 </select>
               </div>
               <div>
-                <label className="text-xs text-[#B8BDC2] font-mono tracking-wider mb-2 block">NUMBER OF ROOMS</label>
-                <input
+                <label htmlFor="quote-rooms" className="text-xs text-[#B8BDC2] font-mono tracking-wider mb-2 block">NUMBER OF ROOMS</label>
+                <input id="quote-rooms"
                   type="number"
                   value={formData.rooms}
                   onChange={e => setFormData({...formData, rooms: e.target.value})}
@@ -486,8 +514,8 @@ function MovingCalculator() {
                 />
               </div>
               <div>
-                <label className="text-xs text-[#B8BDC2] font-mono tracking-wider mb-2 block">MOVING DATE</label>
-                <input
+                <label htmlFor="quote-date" className="text-xs text-[#B8BDC2] font-mono tracking-wider mb-2 block">MOVING DATE</label>
+                <input id="quote-date" required
                   type="date"
                   value={formData.date}
                   onChange={e => setFormData({...formData, date: e.target.value})}
@@ -500,27 +528,26 @@ function MovingCalculator() {
               type="submit"
               className="mt-8 w-full btn-primary bg-[#FF5A00] text-white py-4 rounded-lg font-bold text-lg hover:bg-[#e64d00] transition-all"
             >
-              BUILD MY MOVING QUOTE
+              PREPARE QUOTE REQUEST
             </button>
           </form>
         )}
 
         {/* Quote Result */}
-        {showQuote && (
+        {quoteMessage && (
           <div className="mt-8 glass rounded-xl p-8 animate-scale-in text-center">
-            <div className="text-xs font-mono text-[#FF5A00] tracking-wider mb-4">QUOTE BASED ON YOUR MOVE</div>
-            <h3 className="font-[Space_Grotesk] text-2xl font-bold text-[#F4F1EA] mb-4">
-              {moveType} MOVE — {formData.rooms || '?'} ROOM{formData.rooms !== '1' ? 'S' : ''}
-            </h3>
+            <h3 className="text-2xl font-bold mb-4">YOUR REQUEST IS READY TO SEND</h3>
             <p className="text-[#B8BDC2] mb-6">
-              We'll provide a detailed quote based on your specific move requirements. Our team will contact you within 24 hours.
+              Your request has not been sent. Open your text app, review the details, and press Send.
+              If texting is unavailable, call us at {BUSINESS_PHONE_DISPLAY}.
             </p>
+            <pre className="whitespace-pre-wrap text-left text-sm text-[#B8BDC2] mb-6">{quoteMessage}</pre>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href="tel:+14161234567" className="bg-[#FF5A00] text-white px-6 py-3 rounded-lg font-semibold hover:bg-[#e64d00] transition-colors">
-                CALL FOR INSTANT QUOTE
+              <a href={`sms:${BUSINESS_PHONE}${smsSeparator}body=${encodeURIComponent(quoteMessage)}`} className="bg-[#FF5A00] text-white px-6 py-3 rounded-lg font-semibold">
+                OPEN TEXT APP
               </a>
-              <a href="#contact" className="border border-[#B8BDC2]/30 text-[#F4F1EA] px-6 py-3 rounded-lg font-semibold hover:border-[#FF5A00] transition-colors">
-                REQUEST CALLBACK
+              <a href={`tel:${BUSINESS_PHONE}`} className="border border-[#B8BDC2]/30 px-6 py-3 rounded-lg font-semibold">
+                CALL FOR A QUOTE
               </a>
             </div>
           </div>
@@ -845,6 +872,11 @@ function MovingTeam() {
           {team.map((member, i) => (
             <div
               key={member.name}
+              role="button"
+              tabIndex={0}
+              aria-label={`${member.name}: show ${flippedCards.has(i) ? 'role' : 'specialties'}`}
+              aria-pressed={flippedCards.has(i)}
+              onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleFlip(i); } }}
               onClick={() => toggleFlip(i)}
               className="cursor-pointer perspective-1000"
             >
@@ -923,7 +955,7 @@ function CaseStudies() {
         <div className="text-center mb-16">
           <div className="text-xs font-mono text-[#FF5A00] tracking-[0.3em] mb-4">CASE STUDIES</div>
           <h2 className="font-[Space_Grotesk] text-4xl md:text-5xl font-bold gradient-text mb-4">
-            REAL MOVES.<br />REAL TORONTO PROBLEMS.
+            EXAMPLE MOVES.<br />TORONTO MOVING CHALLENGES.
           </h2>
         </div>
 
@@ -987,10 +1019,10 @@ function FinalCTA() {
           <a href="#calculator" className="btn-primary animate-pulse-glow bg-[#FF5A00] text-white px-10 py-5 rounded-sm font-bold text-lg hover:bg-[#e64d00] transition-all w-full sm:w-auto">
             GET A MOVING QUOTE
           </a>
-          <a href="tel:+14161234567" className="border border-[#B8BDC2]/30 text-[#F4F1EA] px-10 py-5 rounded-sm font-bold text-lg hover:border-[#FF5A00] hover:text-[#FF5A00] transition-all w-full sm:w-auto">
+          <a href={`tel:${BUSINESS_PHONE}`} className="border border-[#B8BDC2]/30 text-[#F4F1EA] px-10 py-5 rounded-sm font-bold text-lg hover:border-[#FF5A00] hover:text-[#FF5A00] transition-all w-full sm:w-auto">
             CALL NOW
           </a>
-          <a href="sms:+14161234567" className="border border-[#B8BDC2]/30 text-[#F4F1EA] px-10 py-5 rounded-sm font-bold text-lg hover:border-[#FF5A00] hover:text-[#FF5A00] transition-all w-full sm:w-auto">
+          <a href={`sms:${BUSINESS_PHONE}`} className="border border-[#B8BDC2]/30 text-[#F4F1EA] px-10 py-5 rounded-sm font-bold text-lg hover:border-[#FF5A00] hover:text-[#FF5A00] transition-all w-full sm:w-auto">
             TEXT US
           </a>
         </div>
@@ -1048,12 +1080,12 @@ function Footer() {
             <ul className="space-y-2 text-sm text-[#B8BDC2]">
               <li>Toronto, ON</li>
               <li>Liberty Village Area</li>
-              <li className="text-[#FF5A00]">Call for availability</li>
+              <li><a href={`tel:${BUSINESS_PHONE}`} className="text-[#FF5A00]">{BUSINESS_PHONE_DISPLAY}</a></li>
             </ul>
           </div>
         </div>
         <div className="border-t border-[#181818] pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs text-[#B8BDC2]/50">© 2024 Liberty Moving. All rights reserved.</p>
+          <p className="text-xs text-[#B8BDC2]/50">© {new Date().getFullYear()} Liberty Moving. All rights reserved.</p>
           <p className="text-xs text-[#B8BDC2]/50">Toronto's City Move Specialist</p>
         </div>
       </div>
@@ -1066,10 +1098,10 @@ function MobileStickyBar() {
   return (
     <div className="mobile-sticky-bar md:hidden p-3">
       <div className="grid grid-cols-3 gap-2">
-        <a href="tel:+14161234567" className="bg-[#181818] text-[#F4F1EA] py-3 rounded-lg text-xs font-semibold text-center hover:bg-[#FF5A00] hover:text-white transition-colors">
+        <a href={`tel:${BUSINESS_PHONE}`} className="bg-[#181818] text-[#F4F1EA] py-3 rounded-lg text-xs font-semibold text-center hover:bg-[#FF5A00] hover:text-white transition-colors">
           📞 CALL
         </a>
-        <a href="sms:+14161234567" className="bg-[#181818] text-[#F4F1EA] py-3 rounded-lg text-xs font-semibold text-center hover:bg-[#FF5A00] hover:text-white transition-colors">
+        <a href={`sms:${BUSINESS_PHONE}`} className="bg-[#181818] text-[#F4F1EA] py-3 rounded-lg text-xs font-semibold text-center hover:bg-[#FF5A00] hover:text-white transition-colors">
           💬 TEXT
         </a>
         <a href="#calculator" className="bg-[#FF5A00] text-white py-3 rounded-lg text-xs font-semibold text-center hover:bg-[#e64d00] transition-colors">
@@ -1130,7 +1162,7 @@ export default function App() {
   useScrollReveal();
   
   return (
-    <div className="min-h-screen bg-[#050505] text-[#F4F1EA]">
+    <div className="min-h-screen pb-24 md:pb-0 bg-[#050505] text-[#F4F1EA]">
       {/* Noise overlay */}
       <div className="noise-overlay" />
       
