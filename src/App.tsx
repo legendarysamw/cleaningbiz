@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef, type ReactNode, type FormEvent } from 'react';
+import { useState, useEffect, useRef, type ReactNode } from 'react';
 
 const BUSINESS_PHONE = '+16478743551';
 const BUSINESS_PHONE_DISPLAY = '(647) 874-3551';
+const BOOKING_EMAIL = 'shandallee@proton.me';
 
 // ============ SCROLL REVEAL ============
 function useScrollReveal() {
@@ -77,7 +78,7 @@ function Navigation() {
         <div className="hidden md:flex items-center gap-8">
           <a href="#services" className="text-[#B8BDC2] hover:text-[#FF5A00] transition-colors text-sm font-medium">Services</a>
           <a href="#journey" className="text-[#B8BDC2] hover:text-[#FF5A00] transition-colors text-sm font-medium">How It Works</a>
-          <a href="#calculator" className="text-[#B8BDC2] hover:text-[#FF5A00] transition-colors text-sm font-medium">Get Quote</a>
+          <a href="#calculator" className="text-[#B8BDC2] hover:text-[#FF5A00] transition-colors text-sm font-medium">Book a Move</a>
           <a href="#challenges" className="text-[#B8BDC2] hover:text-[#FF5A00] transition-colors text-sm font-medium">Condo Moving</a>
           <a href={`tel:${BUSINESS_PHONE}`} className="btn-primary bg-[#FF5A00] text-white px-5 py-2.5 rounded-sm text-sm font-semibold hover:bg-[#e64d00] transition-colors">
             CALL NOW
@@ -96,7 +97,7 @@ function Navigation() {
           <div className="flex flex-col gap-4">
             <a href="#services" className="text-[#B8BDC2] hover:text-[#FF5A00] transition-colors text-sm font-medium">Services</a>
             <a href="#journey" className="text-[#B8BDC2] hover:text-[#FF5A00] transition-colors text-sm font-medium">How It Works</a>
-            <a href="#calculator" className="text-[#B8BDC2] hover:text-[#FF5A00] transition-colors text-sm font-medium">Get Quote</a>
+            <a href="#calculator" className="text-[#B8BDC2] hover:text-[#FF5A00] transition-colors text-sm font-medium">Book a Move</a>
             <a href="#challenges" className="text-[#B8BDC2] hover:text-[#FF5A00] transition-colors text-sm font-medium">Condo Moving</a>
             <a href={`tel:${BUSINESS_PHONE}`} className="bg-[#FF5A00] text-white px-5 py-2.5 rounded-sm text-sm font-semibold text-center">CALL NOW</a>
           </div>
@@ -191,7 +192,7 @@ function Hero() {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-slide-up" style={{animationDelay: '0.4s'}}>
           <a href="#calculator" className="btn-primary animate-pulse-glow bg-[#FF5A00] text-white px-8 py-4 rounded-sm font-semibold text-lg hover:bg-[#e64d00] transition-all">
-            GET A MOVING QUOTE
+            REQUEST A BOOKING
           </a>
           <a href={`tel:${BUSINESS_PHONE}`} className="border border-[#B8BDC2]/30 text-[#F4F1EA] px-8 py-4 rounded-sm font-semibold text-lg hover:border-[#FF5A00] hover:text-[#FF5A00] transition-all">
             CALL NOW
@@ -382,6 +383,9 @@ function MovingCalculator() {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
+    email: '',
+    time: '',
+    notes: '',
     from: '',
     to: '',
     floor: '',
@@ -390,39 +394,18 @@ function MovingCalculator() {
     items: '',
     date: '',
   });
-  const [quoteMessage, setQuoteMessage] = useState('');
-
-  useEffect(() => { setQuoteMessage(''); }, [formData, moveType]);
-
-  const smsSeparator = /iPad|iPhone|iPod/.test(navigator.userAgent) ? '&' : '?';
-
   const moveTypes = ['CONDO', 'APARTMENT', 'HOUSE', 'OFFICE', 'SINGLE ITEM', 'SMALL MOVE', 'FULL MOVE'];
-
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
-    setQuoteMessage([
-      'Liberty Moving quote request',
-      `Name: ${formData.name}`,
-      `Callback number: ${formData.phone}`,
-      `Move type: ${moveType}`,
-      `From: ${formData.from}`,
-      `To: ${formData.to}`,
-      `Floor: ${formData.floor || 'Not specified'}`,
-      `Elevator: ${formData.elevator || 'Not specified'}`,
-      `Rooms: ${formData.rooms || 'Not specified'}`,
-      `Moving date: ${formData.date}`,
-    ].join('\n'));
-  };
 
   return (
     <section id="calculator" className="py-32 relative">
       <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-[#0a0a0a] to-[#050505]" />
       <div className="relative max-w-4xl mx-auto px-6">
         <div className="text-center mb-16">
-          <div className="text-xs font-mono text-[#FF5A00] tracking-[0.3em] mb-4">REQUEST A MOVING QUOTE</div>
+          <div className="text-xs font-mono text-[#FF5A00] tracking-[0.3em] mb-4">REQUEST YOUR MOVE</div>
           <h2 className="font-[Space_Grotesk] text-4xl md:text-5xl font-bold gradient-text mb-4">
-            WHAT KIND OF MOVE?
+            BOOK YOUR MOVE
           </h2>
+          <p className="text-[#B8BDC2]">Request your preferred moving date. We will confirm availability and pricing before your booking is finalized.</p>
         </div>
 
         {/* Move Type Selection */}
@@ -431,6 +414,8 @@ function MovingCalculator() {
             {moveTypes.map(type => (
               <button
                 key={type}
+                type="button"
+                aria-pressed={moveType === type}
                 onClick={() => setMoveType(type)}
                 className={`p-4 rounded-lg border text-sm font-semibold transition-all duration-300 ${
                   moveType === type
@@ -446,19 +431,36 @@ function MovingCalculator() {
 
         {/* Form */}
         {moveType && (
-          <form onSubmit={handleSubmit} className="glass rounded-xl p-8 animate-scale-in">
+          <form action={`https://formsubmit.co/${BOOKING_EMAIL}`} method="POST" className="glass rounded-xl p-8 animate-scale-in">
+            <input type="hidden" name="_subject" value="Liberty Moving — New booking request" />
+            <input type="hidden" name="_template" value="table" />
+            <input type="hidden" name="move_type" value={moveType} />
+            <input type="text" name="_honey" className="hidden" tabIndex={-1} autoComplete="off" aria-hidden="true" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label htmlFor="quote-name" className="text-xs text-[#B8BDC2] mb-2 block">YOUR NAME</label>
-                <input id="quote-name" autoComplete="name" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-[#0a0a0a] border border-[#181818] rounded-lg px-4 py-3" />
+                <input name="name" id="quote-name" autoComplete="name" required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full bg-[#0a0a0a] border border-[#181818] rounded-lg px-4 py-3" />
               </div>
               <div>
                 <label htmlFor="quote-phone" className="text-xs text-[#B8BDC2] mb-2 block">CALLBACK NUMBER</label>
-                <input id="quote-phone" type="tel" autoComplete="tel" required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full bg-[#0a0a0a] border border-[#181818] rounded-lg px-4 py-3" />
+                <input name="phone" id="quote-phone" type="tel" autoComplete="tel" required value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="w-full bg-[#0a0a0a] border border-[#181818] rounded-lg px-4 py-3" />
+              </div>
+              <div>
+                <label htmlFor="booking-email" className="text-xs text-[#B8BDC2] mb-2 block">YOUR EMAIL</label>
+                <input id="booking-email" name="email" type="email" autoComplete="email" required value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="w-full bg-[#0a0a0a] border border-[#181818] rounded-lg px-4 py-3" />
+              </div>
+              <div>
+                <label htmlFor="booking-time" className="text-xs text-[#B8BDC2] mb-2 block">PREFERRED ARRIVAL WINDOW (TORONTO TIME)</label>
+                <select id="booking-time" name="preferred_time" value={formData.time} onChange={e => setFormData({...formData, time: e.target.value})} className="w-full bg-[#0a0a0a] border border-[#181818] rounded-lg px-4 py-3">
+                  <option value="">Flexible</option>
+                  <option value="Morning (8 AM–12 PM)">Morning (8 AM–12 PM)</option>
+                  <option value="Afternoon (12 PM–5 PM)">Afternoon (12 PM–5 PM)</option>
+                  <option value="Evening (5 PM–8 PM)">Evening (5 PM–8 PM)</option>
+                </select>
               </div>
               <div>
                 <label htmlFor="quote-from" className="text-xs text-[#B8BDC2] font-mono tracking-wider mb-2 block">CURRENT LOCATION</label>
-                <input id="quote-from" required
+                <input name="pickup_location" id="quote-from" required
                   type="text"
                   value={formData.from}
                   onChange={e => setFormData({...formData, from: e.target.value})}
@@ -468,7 +470,7 @@ function MovingCalculator() {
               </div>
               <div>
                 <label htmlFor="quote-to" className="text-xs text-[#B8BDC2] font-mono tracking-wider mb-2 block">NEW LOCATION</label>
-                <input id="quote-to" required
+                <input name="destination" id="quote-to" required
                   type="text"
                   value={formData.to}
                   onChange={e => setFormData({...formData, to: e.target.value})}
@@ -478,7 +480,7 @@ function MovingCalculator() {
               </div>
               <div>
                 <label htmlFor="quote-floor" className="text-xs text-[#B8BDC2] font-mono tracking-wider mb-2 block">FLOOR</label>
-                <select id="quote-floor"
+                <select name="floor" id="quote-floor"
                   value={formData.floor}
                   onChange={e => setFormData({...formData, floor: e.target.value})}
                   className="w-full bg-[#0a0a0a] border border-[#181818] rounded-lg px-4 py-3 text-[#F4F1EA] focus:border-[#FF5A00] focus:outline-none transition-colors"
@@ -491,7 +493,7 @@ function MovingCalculator() {
               </div>
               <div>
                 <label htmlFor="quote-elevator" className="text-xs text-[#B8BDC2] font-mono tracking-wider mb-2 block">ELEVATOR</label>
-                <select id="quote-elevator"
+                <select name="elevator" id="quote-elevator"
                   value={formData.elevator}
                   onChange={e => setFormData({...formData, elevator: e.target.value})}
                   className="w-full bg-[#0a0a0a] border border-[#181818] rounded-lg px-4 py-3 text-[#F4F1EA] focus:border-[#FF5A00] focus:outline-none transition-colors"
@@ -504,7 +506,7 @@ function MovingCalculator() {
               </div>
               <div>
                 <label htmlFor="quote-rooms" className="text-xs text-[#B8BDC2] font-mono tracking-wider mb-2 block">NUMBER OF ROOMS</label>
-                <input id="quote-rooms"
+                <input name="rooms" id="quote-rooms"
                   type="number"
                   value={formData.rooms}
                   onChange={e => setFormData({...formData, rooms: e.target.value})}
@@ -515,7 +517,7 @@ function MovingCalculator() {
               </div>
               <div>
                 <label htmlFor="quote-date" className="text-xs text-[#B8BDC2] font-mono tracking-wider mb-2 block">MOVING DATE</label>
-                <input id="quote-date" required
+                <input name="moving_date" id="quote-date" required
                   type="date"
                   value={formData.date}
                   onChange={e => setFormData({...formData, date: e.target.value})}
@@ -524,34 +526,24 @@ function MovingCalculator() {
               </div>
             </div>
 
+            <div className="mt-6">
+              <label htmlFor="booking-notes" className="text-xs text-[#B8BDC2] mb-2 block">ITEMS & SPECIAL INSTRUCTIONS (OPTIONAL)</label>
+              <textarea id="booking-notes" name="notes" rows={4} maxLength={3000} value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})} placeholder="Large furniture, access restrictions, packing help…" className="w-full bg-[#0a0a0a] border border-[#181818] rounded-lg px-4 py-3" />
+            </div>
+            <p className="mt-6 text-sm text-[#B8BDC2]">Your details are processed by FormSubmit and emailed to Liberty Moving so we can respond to your request. This does not reserve a date or take payment.</p>
             <button
               type="submit"
               className="mt-8 w-full btn-primary bg-[#FF5A00] text-white py-4 rounded-lg font-bold text-lg hover:bg-[#e64d00] transition-all"
             >
-              PREPARE QUOTE REQUEST
+              SEND BOOKING REQUEST
             </button>
           </form>
         )}
 
-        {/* Quote Result */}
-        {quoteMessage && (
-          <div className="mt-8 glass rounded-xl p-8 animate-scale-in text-center">
-            <h3 className="text-2xl font-bold mb-4">YOUR REQUEST IS READY TO SEND</h3>
-            <p className="text-[#B8BDC2] mb-6">
-              Your request has not been sent. Open your text app, review the details, and press Send.
-              If texting is unavailable, call us at {BUSINESS_PHONE_DISPLAY}.
-            </p>
-            <pre className="whitespace-pre-wrap text-left text-sm text-[#B8BDC2] mb-6">{quoteMessage}</pre>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a href={`sms:${BUSINESS_PHONE}${smsSeparator}body=${encodeURIComponent(quoteMessage)}`} className="bg-[#FF5A00] text-white px-6 py-3 rounded-lg font-semibold">
-                OPEN TEXT APP
-              </a>
-              <a href={`tel:${BUSINESS_PHONE}`} className="border border-[#B8BDC2]/30 px-6 py-3 rounded-lg font-semibold">
-                CALL FOR A QUOTE
-              </a>
-            </div>
-          </div>
-        )}
+        <p className="mt-6 text-center text-sm text-[#B8BDC2]">
+          Prefer to contact us directly? <a href={`mailto:${BOOKING_EMAIL}`} className="text-[#FF5A00] underline">{BOOKING_EMAIL}</a>
+          {' '}or <a href={`tel:${BUSINESS_PHONE}`} className="text-[#FF5A00] underline">{BUSINESS_PHONE_DISPLAY}</a>.
+        </p>
       </div>
     </section>
   );
@@ -1017,7 +1009,7 @@ function FinalCTA() {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
           <a href="#calculator" className="btn-primary animate-pulse-glow bg-[#FF5A00] text-white px-10 py-5 rounded-sm font-bold text-lg hover:bg-[#e64d00] transition-all w-full sm:w-auto">
-            GET A MOVING QUOTE
+            REQUEST A BOOKING
           </a>
           <a href={`tel:${BUSINESS_PHONE}`} className="border border-[#B8BDC2]/30 text-[#F4F1EA] px-10 py-5 rounded-sm font-bold text-lg hover:border-[#FF5A00] hover:text-[#FF5A00] transition-all w-full sm:w-auto">
             CALL NOW
@@ -1081,6 +1073,7 @@ function Footer() {
               <li>Toronto, ON</li>
               <li>Liberty Village Area</li>
               <li><a href={`tel:${BUSINESS_PHONE}`} className="text-[#FF5A00]">{BUSINESS_PHONE_DISPLAY}</a></li>
+              <li><a href={`mailto:${BOOKING_EMAIL}`} className="text-[#FF5A00]">{BOOKING_EMAIL}</a></li>
             </ul>
           </div>
         </div>
@@ -1105,7 +1098,7 @@ function MobileStickyBar() {
           💬 TEXT
         </a>
         <a href="#calculator" className="bg-[#FF5A00] text-white py-3 rounded-lg text-xs font-semibold text-center hover:bg-[#e64d00] transition-colors">
-          📋 GET QUOTE
+          📋 BOOK MOVE
         </a>
       </div>
     </div>
